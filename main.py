@@ -1,29 +1,27 @@
-# import library yang bakal dipake
-from fastapi import FastAPI
-from tensorflow import keras
-import numpy as np
-from PIL import Image
-import uvicorn
+# api.py
+from flask import Flask, request, jsonify
+import pickle
 
-app = FastAPI()
+app = Flask(__name__)
 
-# load models
-model_path = "/path/models"
-model = keras.models.load_model(model_path)
+# Load the pre-trained machine learning model
+with open('ModelFinal.pkl', 'rb') as model_file:
+    model = pickle.load(model_file)
 
-@app.get("/", status_code=200)
-async def root():
-    return {
-        "code": 200,
-        "success": "true",
-        "message": "Service OK"
-    }
+@app.route('/predict', methods=['POST'])
+def predict():
+    try:
+        # Get input data from the request
+        data = request.get_json()
 
-# tambahkan endpoint pada aplikasi FastAPI untuk menerima file gambar dan melakukan prediksi
-@app.post("/categorize", status_code=201)
-async def categorize(payload):
-    return
+        # Make predictions using the loaded model
+        prediction = model.predict(["Makan bakso"])  # Adjust this line based on your model input
 
-# jalankan server FastAPI
-if __name__ == "__main__":
-    uvicorn.run(app, host="localhost", port=8080)
+        # Return the prediction as JSON
+        return jsonify({'prediction': prediction.tolist()})
+
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+if __name__ == '__main__':
+    app.run(port=5000)
