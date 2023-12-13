@@ -1,33 +1,34 @@
-# api.py
 from flask import Flask, request, jsonify
-import pickle
 import joblib
-import numpy as np 
+import numpy as np
 
 app = Flask(__name__)
 
-# Load the pre-trained machine learning model
-# with open('ModelFinal.pkl', 'rb') as model_file:
-#     model = pickle.load(model_file)
+# Load the pre-trained model
+model = joblib.load('./models/ModelFinal.pkl')
 
-model = joblib.load('ModelFinal.pkl')
+# Load the TF-IDF vectorizer
+tfidf_vectorizer = joblib.load('./models/tfidfvectorizer.pkl')  # Assuming you saved the vectorizer during training
 
-@app.route('/predict', methods=['POST'])
+Y_train_columns = joblib.load('./models/Y_train_columns.pkl')  # Assuming you saved the columns during training
+
+@app.route('/categorize', methods=['POST'])
 def predict():
-    try:
-        # Get input data from the request
-        # data = request.get_json()
-        # input_array = np.array(["Bakso", "baksi"]).reshape(-1, 1)
+    data = request.get_json(force=True)
+    nama = data['nama']
 
+    # Transform the input text using the TF-IDF vectorizer
+    text_vectorizer = tfidf_vectorizer.transform(nama)
 
-        # Make predictions using the loaded model
-        prediction = model.predict([["Bakso", "baksi"]])  # Adjust this line based on your model input
+    # Make predictions using the model
+    prediction = model.predict(text_vectorizer)
 
-        # Return the prediction as JSON
-        return jsonify({'prediction': prediction.tolist()})
+    # Extract the predicted categories
+    predicted_categories = [Y_train_columns[i] for i in np.where(prediction == 1)[1]]
 
-    except Exception as e:
-        return jsonify({'error': str(e)})
+    # Return the result as JSON
+    result = {'predicted_categories': predicted_categories}
+    return jsonify(result)
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    app.run(host='0.0.0.0', port=8080, debug=True)
