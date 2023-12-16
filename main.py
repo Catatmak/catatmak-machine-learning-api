@@ -103,7 +103,7 @@ def get_insight():
         'total_expenses_last_week': int(total_expenses_last_week),
         'most_expensive_category': str(most_expensive_category),
         'total_expenses_most_category': int(total_expenses_most_category),
-        'day_and_date_most_expenses': str(day_and_date_most_expenses.split(',')[0]) + day_and_date_most_expenses.split(',')[1],
+        'date_most_expenses': day_and_date_most_expenses.split(',')[1],
         'total_expenses_on_day_most_expenses': int(total_expenses_on_day_most_expenses),
         'conclusion': str(conclusion),
         'price_difference': int(price_difference),
